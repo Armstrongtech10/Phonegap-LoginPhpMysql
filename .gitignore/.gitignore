@@ -1,0 +1,96 @@
+<?php
+ header("Access-Control-Allow-Origin: *");
+
+$conexao = mysqli_connect('localhost','root','');
+$banco = mysqli_select_db($conexao,'droid')  or die("banco de dados sem conexão ou não existe, Verifique");
+
+//Criando nova conta
+if(isset($_POST['signup']))
+{
+
+	
+
+	$nome=(trim($_POST['nome']));
+	$email=(trim($_POST['email']));
+	$password=(trim($_POST['password']));
+	
+	
+	$login=mysqli_num_rows(mysqli_query($conexao,"select * from `phonegap_login` where `email`='$email'"));
+	if($login!=0)
+	{
+		echo "exist";
+	}
+	else
+	{
+		$date=date("d-m-y h:i:s");
+		$q=mysqli_query($conexao,"insert into `phonegap_login` (`reg_date`,`nome`,`email`,`password`) 
+
+			values 
+			
+			('$date','$nome','$email','$password')");
+		if($q)
+		{
+			echo "success";
+		}
+		else
+		{
+			echo "failed";
+		}
+	}
+	echo mysqli_error();
+}
+
+//Login
+if(isset($_POST['login']))
+{
+	$email=(trim($_POST['email']));
+	$password=(trim($_POST['password']));
+	$login=mysqli_num_rows(mysqli_query($conexao,"select * from `phonegap_login` where `email`='$email' and `password`='$password'"));
+	if($login!=0)
+	{
+		echo "success";
+	}
+	else
+	{
+		echo "failed";
+	}
+}
+
+//Mudar Senha
+if(isset($_POST['change_password']))
+{
+	$email=(trim($_POST['email']));
+	$old_password=(trim($_POST['old_password']));
+	$new_password=(trim($_POST['new_password']));
+	$check=mysqli_num_rows(mysqli_query($conexao,"select * from `phonegap_login` where `email`='$email' and `password`='$old_password'"));
+	if($check!=0)
+	{
+		mysqli_query($conexao,"update `phonegap_login` set `password`='$new_password' where `email`='$email'");
+		echo "success";
+	}
+	else
+	{
+		echo "incorrect";
+	}
+}
+
+// Esqueceu Senha
+if(isset($_POST['forget_password']))
+{
+	$email=(trim($_POST['email']));
+	$q=mysqli_query($conexao,"select * from `phonegap_login` where `email`='$email'");
+	$check=mysqli_num_rows($q);
+	if($check!=0)
+	{
+		echo "success";
+		$data=mysqli_fetch_array($q);
+		$string="Hey,".$data['nome'].", Your password is".$data['password'];
+		mail($email, "Your Password", $string);
+	}
+	else
+	{
+		echo "invalid";
+	}
+}
+
+?>
